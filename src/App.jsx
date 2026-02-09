@@ -59,6 +59,7 @@ const ADS = [
   { id: 55, brand: "Minions", title: "Despicable Me 4", celebs: [], cat: "Entertainment", emoji: "🍌", logo: "illumination.com", color: "#FFD500" },
   { id: 56, brand: "Liquid I.V.", title: "Hydration", celebs: [], cat: "Beverage", emoji: "💧", logo: "liquid-iv.com", color: "#FFD700", keywords: ["toilet"] },
   { id: 57, brand: "Toyota", title: "People Are the Destination", celebs: [], cat: "Auto", emoji: "🚙", logo: "toyota.com", color: "#D71920" },
+  { id: 58, brand: "NFL", title: "Belief Is a Superpower", celebs: [], cat: "Sports", emoji: "🏈", logo: "nfl.com", color: "#013369", keywords: ["coaches", "thank you"] },
 ];
 
 const TIERS = [
