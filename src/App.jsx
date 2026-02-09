@@ -43,7 +43,7 @@ const ADS = [
   { id: 39, brand: "Super Mario Galaxy", title: "Movie Trailer", celebs: [], cat: "Entertainment", emoji: "⭐", logo: "nintendo.com", color: "#E60012" },
   { id: 40, brand: "Dairy Queen", title: "Taylor & Swift", celebs: ["Tyrod Taylor", "D'Andre Swift"], cat: "Food", emoji: "🍦", logo: "dairyqueen.com", color: "#D91A2A" },
   { id: 41, brand: "NFL", title: "You Are Special", celebs: [], cat: "Sports", emoji: "🌟", logo: "nfl.com", color: "#013369" },
-  { id: 42, brand: "He Gets Us", title: "More", celebs: [], cat: "Non-Profit", emoji: "✝️", color: "#222" },
+  { id: 42, brand: "He Gets Us", title: "More", celebs: [], cat: "Non-Profit", emoji: "✝️", logo: "hegetsus.com", color: "#222", keywords: ["jesus"] },
   { id: 43, brand: "Tecovas", title: "Cowboy Boots", celebs: [], cat: "Fashion", emoji: "🤠", logo: "tecovas.com", color: "#4A3728" },
   { id: 44, brand: "Manscaped", title: "Hair Ballad", celebs: [], cat: "Personal Care", emoji: "✂️", logo: "manscaped.com", color: "#111" },
   { id: 45, brand: "Skittles", title: "Woodland Creature", celebs: ["Elijah Wood"], cat: "Food", emoji: "🌈", logo: "skittles.com", color: "#EB1C24" },
