@@ -58,6 +58,7 @@ const ADS = [
   { id: 54, brand: "Liquid Death", title: "Safe for Work", celebs: [], cat: "Beverage", emoji: "💀", logo: "liquiddeath.com", color: "#1A1A1A" },
   { id: 55, brand: "Minions", title: "Despicable Me 4", celebs: [], cat: "Entertainment", emoji: "🍌", logo: "illumination.com", color: "#FFD500" },
   { id: 56, brand: "Liquid I.V.", title: "Hydration", celebs: [], cat: "Beverage", emoji: "💧", logo: "liquid-iv.com", color: "#FFD700", keywords: ["toilet"] },
+  { id: 57, brand: "Toyota", title: "People Are the Destination", celebs: [], cat: "Auto", emoji: "🚙", logo: "toyota.com", color: "#D71920" },
 ];
 
 const TIERS = [
