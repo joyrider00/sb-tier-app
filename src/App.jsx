@@ -54,6 +54,9 @@ const ADS = [
   { id: 50, brand: "Frank's RedHot", title: "Eat the GOAT", celebs: ["Ludacris"], cat: "Food", emoji: "🌶️", logo: "franksredhot.com", color: "#CE1126" },
   { id: 51, brand: "Starbucks", title: "Team USA", celebs: [], cat: "Beverage", emoji: "☕", logo: "starbucks.com", color: "#006241" },
   { id: 52, brand: "FanDuel", title: "Last Call for Football", celebs: ["Rob Gronkowski", "Joe Montana"], cat: "Sports", emoji: "🎰", logo: "fanduel.com", color: "#1493FF" },
+  { id: 53, brand: "OpenAI", title: "The Intelligence Age", celebs: [], cat: "Tech", emoji: "🤖", logo: "openai.com", color: "#000" },
+  { id: 54, brand: "Liquid Death", title: "Safe for Work", celebs: [], cat: "Beverage", emoji: "💀", logo: "liquiddeath.com", color: "#1A1A1A" },
+  { id: 55, brand: "Minions", title: "Despicable Me 4", celebs: [], cat: "Entertainment", emoji: "🍌", logo: "illumination.com", color: "#FFD500" },
 ];
 
 const TIERS = [
@@ -715,7 +718,7 @@ export default function App() {
 
       {/* ─── STORY CO BRANDING ─── */}
       <a
-        href="https://www.story.inc"
+        href="https://story.inc/superbowl"
         target="_blank"
         rel="noopener noreferrer"
         style={{
