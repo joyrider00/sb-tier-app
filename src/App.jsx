@@ -110,12 +110,33 @@ export default function App() {
   const [draggedAd, setDraggedAd] = useState(null);
   const [dragOverTier, setDragOverTier] = useState(null);
   const [showInstructions, setShowInstructions] = useState(true);
+  const [comments, setComments] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("sb-lx-comments") || "{}"); }
+    catch { return {}; }
+  });
+  const [commentPrompt, setCommentPrompt] = useState(null); // { adId, tierId }
+  const [commentText, setCommentText] = useState("");
+  const [tooltipAd, setTooltipAd] = useState(null);
+  const commentInputRef = useRef(null);
 
   // Persist rankings
   useEffect(() => {
     try { localStorage.setItem("sb-lx-ranks", JSON.stringify(rankings)); }
     catch {}
   }, [rankings]);
+
+  // Persist comments
+  useEffect(() => {
+    try { localStorage.setItem("sb-lx-comments", JSON.stringify(comments)); }
+    catch {}
+  }, [comments]);
+
+  // Focus comment input when prompt opens
+  useEffect(() => {
+    if (commentPrompt && commentInputRef.current) {
+      setTimeout(() => commentInputRef.current.focus(), 50);
+    }
+  }, [commentPrompt]);
 
   const getAdsInTier = (tierId) => ADS.filter((ad) => rankings[ad.id] === tierId);
   const unrankedAds = ADS.filter((ad) => !rankings[ad.id]);
@@ -135,12 +156,17 @@ export default function App() {
   };
 
   const handleTierClick = (tierId) => {
-    if (selectedAd) { setRankings((p) => ({ ...p, [selectedAd.id]: tierId })); setSelectedAd(null); }
+    if (selectedAd) {
+      setCommentPrompt({ adId: selectedAd.id, tierId });
+      setCommentText(comments[selectedAd.id] || "");
+      setSelectedAd(null);
+    }
   };
 
   const handleRemove = (adId, e) => {
     e.stopPropagation();
     setRankings((p) => { const n = { ...p }; delete n[adId]; return n; });
+    setComments((p) => { const n = { ...p }; delete n[adId]; return n; });
   };
 
   const handleMoveTier = (adId, currentTier, direction, e) => {
@@ -159,7 +185,12 @@ export default function App() {
   const handleDragLeave = () => setDragOverTier(null);
   const handleDrop = (tierId) => (e) => {
     e.preventDefault();
-    if (draggedAd) { setRankings((p) => ({ ...p, [draggedAd.id]: tierId })); setDraggedAd(null); setDragOverTier(null); }
+    if (draggedAd) {
+      setCommentPrompt({ adId: draggedAd.id, tierId });
+      setCommentText(comments[draggedAd.id] || "");
+      setDraggedAd(null);
+      setDragOverTier(null);
+    }
   };
   const handleDragEnd = () => { setDraggedAd(null); setDragOverTier(null); };
   const handleDropToPool = (e) => {
@@ -167,13 +198,37 @@ export default function App() {
     if (draggedAd) { setRankings((p) => { const n = { ...p }; delete n[draggedAd.id]; return n; }); setDraggedAd(null); }
   };
 
-  const resetAll = () => { setRankings({}); setSelectedAd(null); };
+  const handleCommentSubmit = () => {
+    if (commentPrompt) {
+      setRankings((p) => ({ ...p, [commentPrompt.adId]: commentPrompt.tierId }));
+      if (commentText.trim()) {
+        setComments((p) => ({ ...p, [commentPrompt.adId]: commentText.trim() }));
+      }
+      setCommentPrompt(null);
+      setCommentText("");
+    }
+  };
+
+  const handleCommentSkip = () => {
+    if (commentPrompt) {
+      setRankings((p) => ({ ...p, [commentPrompt.adId]: commentPrompt.tierId }));
+      setCommentPrompt(null);
+      setCommentText("");
+    }
+  };
+
+  const resetAll = () => { setRankings({}); setComments({}); setSelectedAd(null); };
 
   const generateShareText = () => {
     let text = "🏈 My Super Bowl LX Ad Rankings\n\n";
     TIERS.forEach((tier) => {
       const ads = getAdsInTier(tier.id);
-      if (ads.length > 0) text += `${tier.label}: ${ads.map((a) => a.brand).join(" · ")}\n`;
+      if (ads.length > 0) {
+        text += `${tier.label}: ${ads.map((a) => {
+          const c = comments[a.id];
+          return c ? `${a.brand} ("${c}")` : a.brand;
+        }).join(" · ")}\n`;
+      }
     });
     text += "\nRank yours ▸ ";
     return text;
@@ -233,10 +288,19 @@ export default function App() {
   const TierChip = ({ ad, tierId }) => {
     const isDragging = draggedAd?.id === ad.id;
     const tierIdx = TIERS.findIndex(t => t.id === tierId);
+    const comment = comments[ad.id];
+    const isTooltipVisible = tooltipAd === ad.id;
     return (
       <div
         draggable onDragStart={handleDragStart(ad)} onDragEnd={handleDragEnd}
         className="tier-chip"
+        onMouseEnter={() => comment && setTooltipAd(ad.id)}
+        onMouseLeave={() => setTooltipAd(null)}
+        onClick={(e) => {
+          if (comment && e.target.closest && !e.target.closest('.chip-btn')) {
+            setTooltipAd(isTooltipVisible ? null : ad.id);
+          }
+        }}
         style={{
           display: "flex", alignItems: "center", gap: 6,
           padding: "4px 6px", borderRadius: 8,
@@ -254,6 +318,34 @@ export default function App() {
         }}>
           {ad.brand}
         </span>
+        {comment && (
+          <span style={{ fontSize: 10, opacity: 0.4, lineHeight: 1, flexShrink: 0 }}>💬</span>
+        )}
+        {/* Comment tooltip */}
+        {comment && isTooltipVisible && (
+          <div style={{
+            position: "absolute", bottom: "calc(100% + 6px)", left: "50%",
+            transform: "translateX(-50%)", background: "rgba(30,30,34,0.97)",
+            backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.12)",
+            borderRadius: 8, padding: "6px 10px", zIndex: 200,
+            maxWidth: 220, minWidth: 100, pointerEvents: "none",
+            animation: "fadeInUp 0.12s ease",
+          }}>
+            <div style={{
+              fontSize: 11, color: "rgba(255,255,255,0.7)",
+              fontFamily: "'DM Sans', sans-serif", fontWeight: 400,
+              lineHeight: 1.4, wordBreak: "break-word",
+            }}>
+              {comment}
+            </div>
+            {/* Arrow */}
+            <div style={{
+              position: "absolute", top: "100%", left: "50%", transform: "translateX(-50%)",
+              width: 0, height: 0, borderLeft: "5px solid transparent",
+              borderRight: "5px solid transparent", borderTop: "5px solid rgba(30,30,34,0.97)",
+            }} />
+          </div>
+        )}
         {/* Mini controls */}
         <div style={{ display: "flex", gap: 2, marginLeft: 2 }}>
           {tierIdx > 0 && (
@@ -533,6 +625,93 @@ export default function App() {
           }}>×</button>
         </div>
       )}
+
+      {/* ─── COMMENT PROMPT MODAL ─── */}
+      {commentPrompt && (() => {
+        const ad = ADS.find(a => a.id === commentPrompt.adId);
+        const tier = TIERS.find(t => t.id === commentPrompt.tierId);
+        return (
+          <div
+            onClick={handleCommentSkip}
+            style={{
+              position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)",
+              backdropFilter: "blur(4px)", zIndex: 300,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              padding: 16,
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: "#1e1e22", borderRadius: 14,
+                border: "1px solid rgba(255,255,255,0.1)",
+                padding: "20px 20px 16px", maxWidth: 340, width: "100%",
+                animation: "fadeInUp 0.15s ease",
+              }}
+            >
+              <div style={{
+                display: "flex", alignItems: "center", gap: 10, marginBottom: 14,
+              }}>
+                <AdThumb ad={ad} size={36} />
+                <div>
+                  <div style={{
+                    fontFamily: "'Oswald', sans-serif", fontWeight: 600, fontSize: 15,
+                    color: "#fff", textTransform: "uppercase", letterSpacing: "0.02em",
+                  }}>
+                    {ad.brand}
+                  </div>
+                  <div style={{
+                    fontSize: 11, color: tier.color, fontWeight: 600,
+                    fontFamily: "'DM Sans', sans-serif",
+                  }}>
+                    {tier.label} Tier — {tier.desc}
+                  </div>
+                </div>
+              </div>
+              <textarea
+                ref={commentInputRef}
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleCommentSubmit(); } }}
+                placeholder="Leave a hot take... (optional)"
+                rows={2}
+                style={{
+                  width: "100%", padding: "10px 12px", borderRadius: 8,
+                  border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)",
+                  color: "#fff", fontSize: 13, fontFamily: "'DM Sans', sans-serif",
+                  outline: "none", resize: "none", lineHeight: 1.4,
+                }}
+              />
+              <div style={{
+                display: "flex", gap: 8, marginTop: 12, justifyContent: "flex-end",
+              }}>
+                <button
+                  onClick={handleCommentSkip}
+                  style={{
+                    padding: "7px 16px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)",
+                    background: "transparent", color: "rgba(255,255,255,0.5)",
+                    fontSize: 12, fontWeight: 500, cursor: "pointer",
+                    fontFamily: "'DM Sans', sans-serif",
+                  }}
+                >
+                  Skip
+                </button>
+                <button
+                  onClick={handleCommentSubmit}
+                  style={{
+                    padding: "7px 16px", borderRadius: 8, border: "none",
+                    background: "linear-gradient(135deg, #D9636B, #E8A87C)",
+                    color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                    fontFamily: "'DM Sans', sans-serif",
+                  }}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ─── STORY CO BRANDING ─── */}
       <div style={{
