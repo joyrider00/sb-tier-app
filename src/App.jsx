@@ -57,7 +57,7 @@ const ADS = [
   { id: 53, brand: "OpenAI", title: "The Intelligence Age", celebs: [], cat: "Tech", emoji: "🤖", logo: "openai.com", color: "#000" },
   { id: 54, brand: "Liquid Death", title: "Safe for Work", celebs: [], cat: "Beverage", emoji: "💀", logo: "liquiddeath.com", color: "#1A1A1A" },
   { id: 55, brand: "Minions", title: "Despicable Me 4", celebs: [], cat: "Entertainment", emoji: "🍌", logo: "illumination.com", color: "#FFD500" },
-  { id: 56, brand: "Liquid I.V.", title: "Hydration", celebs: [], cat: "Beverage", emoji: "💧", logo: "liquid-iv.com", color: "#FFD700" },
+  { id: 56, brand: "Liquid I.V.", title: "Hydration", celebs: [], cat: "Beverage", emoji: "💧", logo: "liquid-iv.com", color: "#FFD700", keywords: ["toilet"] },
 ];
 
 const TIERS = [
@@ -149,7 +149,7 @@ export default function App() {
 
   const filteredUnranked = unrankedAds.filter((ad) => {
     const q = search.toLowerCase();
-    const matchSearch = !q || ad.brand.toLowerCase().includes(q) || ad.title.toLowerCase().includes(q) || ad.celebs.some((c) => c.toLowerCase().includes(q)) || ad.cat.toLowerCase().includes(q);
+    const matchSearch = !q || ad.brand.toLowerCase().includes(q) || ad.title.toLowerCase().includes(q) || ad.celebs.some((c) => c.toLowerCase().includes(q)) || ad.cat.toLowerCase().includes(q) || (ad.keywords && ad.keywords.some((k) => k.toLowerCase().includes(q)));
     const matchCat = catFilter === "All" || ad.cat === catFilter;
     return matchSearch && matchCat;
   });
